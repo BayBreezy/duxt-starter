@@ -53,7 +53,7 @@
         </tr>
       </tbody>
     </table>
-    <div v-if="showPagination" class="flex w-full items-center justify-between px-3 py-5">
+    <div v-if="showPagination" class="flex w-full items-center justify-between gap-5 px-3 py-5">
       <div class="flex items-center gap-2.5">
         <UIButton
           @click="table.setPageIndex(0)"
@@ -97,7 +97,6 @@
           <!-- Add select for changing rows per page -->
           <span class="whitespace-nowrap"> Rows per page </span>
           <UISelect
-            placeholder=" "
             class="h-8 w-14 px-2 text-xs sm:text-xs"
             :options="rowsPerPage"
             :model-value="table.getState().pagination.pageSize"
@@ -113,7 +112,7 @@
             </option>
           </UISelect>
         </div>
-        <div>
+        <div class="whitespace-nowrap">
           Page {{ table.getState().pagination.pageIndex + 1 }} of {{ table.getPageCount() }} -
           {{ table.getFilteredRowModel().rows.length }}
           results
