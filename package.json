@@ -26,6 +26,9 @@
     "@morev/vue-transitions": "^2.3.6",
     "@popperjs/core": "^2.11.8",
     "@tanstack/vue-table": "^8.9.3",
+    "@types/yup": "^0.32.0",
+    "@vee-validate/nuxt": "^4.11.1",
+    "@vee-validate/yup": "^4.11.1",
     "@vueform/multiselect": "^2.6.2",
     "@vueform/slider": "^2.1.7",
     "@vueuse/nuxt": "^10.3.0",
@@ -35,6 +38,7 @@
     "nuxt-icon": "^0.5.0",
     "nuxt-lodash": "^2.5.0",
     "tailwind-merge": "^1.14.0",
-    "v-calendar": "^3.0.3"
+    "v-calendar": "^3.0.3",
+    "yup": "^1.2.0"
   }
 }

@@ -21,9 +21,18 @@
         :type="type"
         :class="cn(variants({ class: props.class }), icon && 'pl-9', trailingIcon && 'pr-10')"
         v-model="localValue"
-        @blur="emit('blur', ($event.target as any).value)"
-        @change="emit('change', ($event.target as any).value)"
-        @input="emit('input', ($event.target as any).value)"
+        @blur="
+          emit('blur', ($event.target as any).value);
+          handleBlur($event);
+        "
+        @change="
+          emit('change', ($event.target as any).value);
+          handleChange($event);
+        "
+        @input="
+          emit('input', ($event.target as any).value);
+          handleChange($event);
+        "
       />
       <slot :errorMessage="errorMessage" :value="localValue" name="icon">
         <div v-if="icon" class="absolute inset-y-0 left-3 flex items-center justify-center">
@@ -111,10 +120,6 @@
        */
       type?: string;
       /**
-       * The error message for the input
-       */
-      errorMessage?: string;
-      /**
        * Custom class to pas to the input
        */
       class?: any;
@@ -122,6 +127,10 @@
        * Whether the input should autofocus
        */
       autofocus?: boolean;
+      /**
+       * Rules for the input
+       */
+      rules?: any;
     }>(),
     { type: "text" }
   );
@@ -146,12 +155,14 @@
     input: [any];
   }>();
 
-  const localValue = computed({
-    get() {
-      return props.modelValue;
-    },
-    set(v) {
-      emit("update:modelValue", v);
-    },
+  const {
+    value: localValue,
+    errorMessage,
+    handleBlur,
+    handleChange,
+  } = useField(() => props.name || inputId.value, props.rules, {
+    initialValue: props.modelValue,
+    label: props.label,
+    syncVModel: true,
   });
 </script>

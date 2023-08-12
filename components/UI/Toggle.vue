@@ -1,8 +1,11 @@
 <template>
-  <HSwitchGroup as="div" :class="cn('flex gap-3', !hasDescription && 'items-center')">
+  <HSwitchGroup as="div" :class="cn('flex gap-3')">
     <HSwitch
-      v-model="active"
+      :model-value="active"
+      :default-checked="active"
+      @update:model-value="handleChange(value)"
       :as="as"
+      :value="value"
       :name="name"
       :class="cn(variants({ size, color }), !active && 'bg-input')"
     >
@@ -30,12 +33,21 @@
         </span>
       </span>
     </HSwitch>
-    <div v-if="hasLabel || hasDescription" class="flex flex-col">
-      <HSwitchLabel v-if="label" :class="cn(labelSize)" class="cursor-pointer font-medium">
-        <slot name="label">{{ label }}</slot>
+    <div v-if="hasLabel || hasDescription" class="flex flex-col gap-1">
+      <HSwitchLabel
+        v-if="label"
+        :class="cn(labelSize, errorMessage && 'text-destructive')"
+        class="cursor-pointer font-medium"
+      >
+        <slot name="label"
+          >{{ label }} <span v-if="required" class="text-destructive">*</span></slot
+        >
       </HSwitchLabel>
-      <HSwitchDescription class="text-sm text-muted-foreground" v-if="description">
+      <HSwitchDescription class="text-sm text-muted-foreground" v-if="description || errorMessage">
         <slot name="description">{{ description }}</slot>
+        <slot name="errorMessage">
+          <span v-if="errorMessage" class="text-destructive">{{ errorMessage }}</span>
+        </slot>
       </HSwitchDescription>
     </div>
   </HSwitchGroup>
@@ -69,9 +81,13 @@
   const props = withDefaults(
     defineProps<{
       /**
+       * The value of the switch.
+       */
+      value?: any;
+      /**
        * The v-model binding for the switch.
        */
-      modelValue?: boolean;
+      modelValue?: any;
       /**
        * The text to be read by screen readers.
        */
@@ -108,6 +124,14 @@
        * The description for the switch.
        */
       description?: string;
+      /**
+       * Rules for the input
+       */
+      rules?: any;
+      /**
+       * Whether the switch is required.
+       */
+      required?: boolean;
     }>(),
     {
       as: "button",
@@ -157,12 +181,17 @@
     "update:modelValue": [any];
   }>();
 
-  const active = computed({
-    get() {
-      return props.modelValue;
-    },
-    set(v) {
-      emit("update:modelValue", v);
-    },
+  const inputId = computed(() => `toggle-${Math.random().toString(36).substring(2, 9)}`);
+
+  const {
+    checked: active,
+    errorMessage,
+    handleChange,
+  } = useField(() => props.name || inputId.value, props.rules, {
+    initialValue: props.modelValue,
+    checkedValue: props.value,
+    type: "checkbox",
+    label: props.label,
+    syncVModel: true,
   });
 </script>

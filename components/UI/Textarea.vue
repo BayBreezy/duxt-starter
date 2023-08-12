@@ -11,17 +11,31 @@
     </slot>
     <div class="relative">
       <textarea
+        ref="textareaRef"
         :name="name"
         :required="required"
+        :rows="rows"
         v-bind="$attrs"
         :disabled="disabled"
         :id="inputId"
         :placeholder="placeholder"
         :class="cn(variants({ class: props.class }), icon && 'pl-9', trailingIcon && 'pr-10')"
         v-model="localValue"
-        @blur="emit('blur', ($event.target as any).value)"
-        @change="emit('change', ($event.target as any).value)"
-        @input="emit('input', ($event.target as any).value)"
+        @blur="
+          emit('blur', ($event.target as any).value);
+          handleBlur($event);
+          autoResize();
+        "
+        @change="
+          emit('change', ($event.target as any).value);
+          handleChange($event);
+          autoResize();
+        "
+        @input="
+          emit('input', ($event.target as any).value);
+          handleChange($event);
+          autoResize();
+        "
       />
       <slot :errorMessage="errorMessage" :value="localValue" name="icon">
         <div v-if="icon" class="absolute left-3 top-2.5 flex items-center justify-center">
@@ -100,14 +114,50 @@
      */
     modelValue?: any;
     /**
-     * The error message for the input
-     */
-    errorMessage?: string;
-    /**
      * Custom class to pas to the input
      */
     class?: any;
+    /**
+     * Rules for the input
+     */
+    rules?: any;
+    /**
+     * Whether the input should autoresize
+     */
+    autoresize?: boolean;
+    /**
+     * The number of rows for the input
+     */
+    rows?: number;
+    /**
+     * Whether the input should autofocus
+     */
+    autofocus?: boolean;
   }>();
+
+  const textarea = ref<HTMLTextAreaElement | null>(null);
+
+  const autoResize = () => {
+    if (props.autoresize) {
+      if (!textarea.value) {
+        return;
+      }
+
+      textarea.value.rows = props.rows || 4;
+
+      const styles = window.getComputedStyle(textarea.value);
+      const paddingTop = parseInt(styles.paddingTop);
+      const paddingBottom = parseInt(styles.paddingBottom);
+      const padding = paddingTop + paddingBottom;
+      const lineHeight = parseInt(styles.lineHeight);
+      const { scrollHeight } = textarea.value;
+      const newRows = (scrollHeight - padding) / lineHeight;
+
+      if (newRows > (props?.rows || 4)) {
+        textarea.value.rows = newRows;
+      }
+    }
+  };
 
   // Get the id of the input from the label or name
   const inputId = computed(
@@ -121,12 +171,30 @@
     input: [any];
   }>();
 
-  const localValue = computed({
-    get() {
-      return props.modelValue;
-    },
-    set(v) {
-      emit("update:modelValue", v);
-    },
+  const {
+    value: localValue,
+    errorMessage,
+    handleBlur,
+    handleChange,
+  } = useField(() => props.name || inputId.value, props.rules, {
+    initialValue: props.modelValue,
+    label: props.label,
+    syncVModel: true,
   });
+
+  onMounted(() => {
+    setTimeout(() => {
+      if (props.autofocus) {
+        textarea.value?.focus();
+      }
+    }, 150);
+    autoResize();
+  });
+
+  watch(
+    () => props.modelValue,
+    () => {
+      nextTick(autoResize);
+    }
+  );
 </script>

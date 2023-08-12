@@ -20,7 +20,10 @@
         :placeholder="placeholder"
         :class="cn(variants({ class: props.class }), icon && 'pl-9')"
         v-model="localValue"
-        @input="emit('input', ($event.target as any).value)"
+        @input="
+          emit('input', ($event.target as any).value);
+          handleChange($event);
+        "
       >
         <option value="" disabled class="bg-background">
           {{ placeholder }}
@@ -103,10 +106,6 @@
        */
       modelValue?: any;
       /**
-       * The error message for the input
-       */
-      errorMessage?: string;
-      /**
        * Custom class to pas to the input
        */
       class?: any;
@@ -130,6 +129,10 @@
        * Whether the input should return the object or the value
        */
       returnObject?: boolean;
+      /**
+       * Rules for the input
+       */
+      rules?: any;
     }>(),
     { placeholder: "Select an option", options: () => [], labelProp: "label", valueProp: "id" }
   );
@@ -153,13 +156,14 @@
     input: [any];
   }>();
 
-  const localValue = computed({
-    get() {
-      return props.modelValue;
-    },
-    set(v) {
-      emit("update:modelValue", v);
-    },
+  const {
+    value: localValue,
+    errorMessage,
+    handleChange,
+  } = useField(() => props.name || inputId.value, props.rules, {
+    initialValue: props.modelValue,
+    label: props.label,
+    syncVModel: true,
   });
 
   const optionsIsPrimitive = computed(() => {

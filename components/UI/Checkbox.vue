@@ -1,26 +1,45 @@
 <template>
-  <div :class="cn('flex gap-3', !hasDescription && 'items-center')">
+  <div :class="cn('flex gap-3')">
     <input
       :id="inputId"
       :class="cn(variants({ size, type }))"
       type="checkbox"
       :name="name"
       :value="value"
-      v-model="isChecked"
+      :disabled="disabled"
+      :required="required"
+      @change="
+        handleChange(value);
+        emit('change', $event);
+      "
       :checked="checked"
       v-bind="$attrs"
     />
     <div v-if="hasLabel || hasDescription" class="flex flex-col gap-px">
       <slot name="label">
         <label
-          :class="cn('cursor-pointer font-medium leading-none', size === 'sm' && 'text-sm')"
+          :class="
+            cn(
+              'cursor-pointer font-medium leading-none',
+              size === 'sm' && 'text-sm',
+              disabled ? 'text-muted-foreground' : '',
+              errorMessage ? 'text-destructive' : ''
+            )
+          "
           :for="inputId"
           v-if="label"
           >{{ label }}</label
         >
       </slot>
       <slot name="description">
-        <p class="text-sm text-muted-foreground" v-if="description">{{ description }}</p>
+        <p class="text-sm text-muted-foreground" v-if="description && !errorMessage">
+          {{ description }}
+        </p>
+      </slot>
+      <slot name="errorMessage">
+        <p class="text-sm text-destructive" v-if="errorMessage">
+          {{ errorMessage }}
+        </p>
       </slot>
     </div>
   </div>
@@ -93,16 +112,29 @@
        */
       id?: any;
       /**
-       * Checked state of the checkbox
+       * Whether the checkbox is disabled
        */
-      checked?: boolean;
+      disabled?: boolean;
+      /**
+       * Whether the checkbox is required
+       */
+      required?: boolean;
+      /**
+       * The validation rules for the checkbox
+       */
+      rules?: any;
     }>(),
     { size: "md", type: "muted" }
   );
 
+  const emit = defineEmits<{
+    "update:modelValue": [value: any];
+    change: [value: any];
+  }>();
+
   const slots = useSlots();
 
-  // Get the ID for the input element
+  // Get the ID for the checkbox element
   const inputId = computed(
     () => props.id || `checkbox-${Math.random().toString(36).substring(2, 9)}`
   );
@@ -111,16 +143,15 @@
   const hasLabel = computed(() => props.label || slots.label);
   const hasDescription = computed(() => props.description || slots.description);
 
-  const emit = defineEmits<{
-    "update:modelValue": [any];
-  }>();
-
-  const isChecked = computed({
-    get() {
-      return props.modelValue;
-    },
-    set(value) {
-      emit("update:modelValue", value);
-    },
-  });
+  const { checked, handleChange, errorMessage } = useField(
+    () => props.name || inputId.value,
+    props.rules,
+    {
+      initialValue: props.modelValue,
+      type: "checkbox",
+      checkedValue: props.value,
+      label: props.label,
+      syncVModel: true,
+    }
+  );
 </script>

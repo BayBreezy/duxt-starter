@@ -109,7 +109,6 @@
       multiple?: boolean;
       required?: boolean;
       hint?: string;
-      errorMessage?: string;
       icon?: string;
       trailingIcon?: string;
       options?: any[];
@@ -117,6 +116,7 @@
       valueProp?: string;
       returnObject?: boolean;
       modelValue?: any;
+      rules?: any;
     }>(),
     {
       placeholder: "Select an option",
@@ -134,13 +134,14 @@
     "update:modelValue": [any];
   }>();
 
-  const localValue = computed({
-    get() {
-      return props.modelValue;
-    },
-    set(v) {
-      emit("update:modelValue", v);
-    },
+  const {
+    errorMessage,
+    handleChange,
+    value: localValue,
+  } = useField(() => props.name || inputId.value, props.rules, {
+    initialValue: props.modelValue,
+    syncVModel: true,
+    label: props.label,
   });
 
   const optionsIsPrimitive = computed(() => {

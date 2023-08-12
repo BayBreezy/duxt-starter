@@ -8,7 +8,13 @@ export default defineNuxtConfig({
     "@vueuse/nuxt",
     "nuxt-lodash",
     "@morev/vue-transitions/nuxt",
+    "@vee-validate/nuxt",
   ],
+  veeValidate: {
+    componentNames: {
+      Form: "VForm",
+    },
+  },
   headlessui: { prefix: "H" },
   app: {
     head: {

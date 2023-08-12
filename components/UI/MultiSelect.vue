@@ -61,6 +61,8 @@
       errorMessage?: string;
       hint?: string;
       disabled?: boolean;
+      name?: string;
+      rules?: any;
     } & Props
   >();
 
@@ -85,17 +87,18 @@
 
   defineOptions({ inheritAttrs: false });
 
-  const localModel = computed({
-    get() {
-      return props.modelValue;
-    },
-    set(v) {
-      emit("update:modelValue", v);
-    },
-  });
-
   // Get the id of the input from the label or name
   const inputId = computed(() => props.id || `ms-${Math.random().toString(36).substring(2, 9)}`);
+
+  const { errorMessage, value: localModel } = useField(
+    () => props.name || inputId.value,
+    props.rules,
+    {
+      initialValue: props.modelValue,
+      syncVModel: true,
+      label: props.label,
+    }
+  );
 </script>
 
 <style src="@vueform/multiselect/themes/default.css"></style>
